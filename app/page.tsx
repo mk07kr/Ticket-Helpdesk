@@ -20,7 +20,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, Clock, Plus, Ticket, BarChart, Home, Download } from "lucide-react"
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Plus,
+  Ticket,
+  BarChart,
+  Home,
+  Download,
+  Users,
+  Shield,
+  Zap,
+  HeadphonesIcon,
+} from "lucide-react"
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -374,36 +387,177 @@ export default function Component() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="home" className="space-y-6">
-            <div className="min-h-[60vh] flex items-center justify-center">
-              <Card className="w-full max-w-2xl">
-                <CardHeader className="text-center">
-                  <CardTitle className="text-3xl">Welcome to Ticket Management System</CardTitle>
-                  <CardDescription className="text-lg">
-                    Manage your support tickets efficiently with our comprehensive platform
-                  </CardDescription>
+          <TabsContent value="home" className="space-y-8">
+            {/* Hero Section */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 rounded-2xl">
+              <div className="absolute inset-0 bg-black/20"></div>
+              <div className="relative px-8 py-16 text-center text-white">
+                <div className="mx-auto max-w-3xl">
+                  <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6">
+                    Welcome to Your
+                    <span className="block text-yellow-300">Support Hub</span>
+                  </h1>
+                  <p className="text-xl leading-8 text-blue-100 mb-8">
+                    Streamline your support experience with our comprehensive ticket management system. Get help faster,
+                    track progress, and stay connected with our support team.
+                  </p>
+                  <div className="flex items-center justify-center space-x-4 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-5 w-5 text-green-300" />
+                      <span>24/7 Support</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Zap className="h-5 w-5 text-yellow-300" />
+                      <span>Fast Response</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Shield className="h-5 w-5 text-blue-300" />
+                      <span>Secure Platform</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* User Info Card */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Users className="h-5 w-5 text-blue-600" />
+                    <span>Your Account</span>
+                  </CardTitle>
+                  <CardDescription>Account information and current status</CardDescription>
                 </CardHeader>
-                <CardContent className="flex justify-center space-x-4">
-                  <div className="text-center space-y-4">
-                    <p className="text-gray-600">
-                      You are logged in as: <span className="font-semibold">{currentUser.name}</span>
-                    </p>
-                    <p className="text-gray-600">
-                      Role:{" "}
-                      <Badge variant={currentUser.role === "ADMIN" ? "default" : "secondary"}>{currentUser.role}</Badge>
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                      <Button onClick={() => window.location.reload()} size="lg">
-                        Dashboard
-                      </Button>
-                      <Button onClick={() => window.location.reload()} variant="outline" size="lg">
-                        View Tickets
-                      </Button>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-500">Full Name</Label>
+                      <p className="text-lg font-semibold">{currentUser.name}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-500">Email Address</Label>
+                      <p className="text-lg font-semibold">{currentUser.email}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-500">Account Type</Label>
+                      <Badge
+                        variant={currentUser.role === "ADMIN" ? "default" : "secondary"}
+                        className="text-sm px-3 py-1"
+                      >
+                        {currentUser.role === "ADMIN" ? "Administrator" : "User"}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-500">Member Since</Label>
+                      <p className="text-lg font-semibold">{new Date(currentUser.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Quick Stats */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart className="h-5 w-5 text-green-600" />
+                    <span>Quick Stats</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Your Tickets</span>
+                      <span className="font-bold text-lg">
+                        {tickets.filter((t) => t.createdBy === currentUser.email).length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Open Issues</span>
+                      <span className="font-bold text-lg text-red-600">
+                        {tickets.filter((t) => t.createdBy === currentUser.email && t.status === "OPEN").length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Resolved</span>
+                      <span className="font-bold text-lg text-green-600">
+                        {tickets.filter((t) => t.createdBy === currentUser.email && t.status === "RESOLVED").length}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Ticket className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Create Tickets</h3>
+                  <p className="text-gray-600 text-sm">Submit support requests and track their progress in real-time</p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <HeadphonesIcon className="h-6 w-6 text-green-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">24/7 Support</h3>
+                  <p className="text-gray-600 text-sm">
+                    Get help whenever you need it with our round-the-clock support team
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow duration-300">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <BarChart className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Track Progress</h3>
+                  <p className="text-gray-600 text-sm">Monitor your tickets and get updates on resolution progress</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Activity */}
+            {currentUser.role === "USER" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Recent Tickets</CardTitle>
+                  <CardDescription>Latest support requests and their current status</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {tickets
+                      .filter((t) => t.createdBy === currentUser.email)
+                      .slice(0, 3)
+                      .map((ticket) => (
+                        <div key={ticket.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div className="flex items-center space-x-4">
+                            {getStatusIcon(ticket.status)}
+                            <div>
+                              <p className="font-medium">{ticket.title}</p>
+                              <p className="text-sm text-gray-500">Created on {ticket.createdAt}</p>
+                            </div>
+                          </div>
+                          <Badge className={getPriorityColor(ticket.priority)}>{ticket.priority}</Badge>
+                        </div>
+                      ))}
+                    {tickets.filter((t) => t.createdBy === currentUser.email).length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <Ticket className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No tickets yet. Create your first support ticket to get started!</p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {currentUser.role === "ADMIN" && (
