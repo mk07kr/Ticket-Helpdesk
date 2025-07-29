@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { AlertCircle, CheckCircle, Clock, Plus, Ticket, BarChart, Home } from "lucide-react"
+import { AlertCircle, CheckCircle, Clock, Plus, Ticket, BarChart, Home, Download } from "lucide-react"
 import {
   Bar,
   BarChart as RechartsBarChart,
@@ -178,6 +178,52 @@ export default function Component() {
         ticket.id === ticketId ? { ...ticket, status, updatedAt: new Date().toISOString().split("T")[0] } : ticket,
       ),
     )
+  }
+
+  const exportToExcel = () => {
+    // Filter tickets based on user role
+    const ticketsToExport =
+      currentUser?.role === "ADMIN" ? tickets : tickets.filter((ticket) => ticket.createdBy === currentUser?.email)
+
+    // Create CSV content
+    const headers = [
+      "Ticket ID",
+      "Title",
+      "Description",
+      "Status",
+      "Priority",
+      "Created By",
+      "Assigned To",
+      "Created Date",
+      "Updated Date",
+    ]
+    const csvContent = [
+      headers.join(","),
+      ...ticketsToExport.map((ticket) =>
+        [
+          ticket.id,
+          `"${ticket.title.replace(/"/g, '""')}"`, // Escape quotes in title
+          `"${ticket.description.replace(/"/g, '""')}"`, // Escape quotes in description
+          ticket.status,
+          ticket.priority,
+          ticket.createdBy,
+          ticket.assignedTo || "Unassigned",
+          ticket.createdAt,
+          ticket.updatedAt,
+        ].join(","),
+      ),
+    ].join("\n")
+
+    // Create and download file
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+    const link = document.createElement("a")
+    const url = URL.createObjectURL(blob)
+    link.setAttribute("href", url)
+    link.setAttribute("download", `tickets_export_${new Date().toISOString().split("T")[0]}.csv`)
+    link.style.visibility = "hidden"
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   const getStatusIcon = (status: string) => {
@@ -364,7 +410,13 @@ export default function Component() {
             <TabsContent value="dashboard" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
-                <Badge variant="outline">Last updated: {new Date().toLocaleDateString()}</Badge>
+                <div className="flex items-center space-x-4">
+                  <Button onClick={exportToExcel} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export to Excel
+                  </Button>
+                  <Badge variant="outline">Last updated: {new Date().toLocaleDateString()}</Badge>
+                </div>
               </div>
 
               {/* Key Metrics Cards */}
@@ -528,61 +580,67 @@ export default function Component() {
           <TabsContent value="tickets" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">{currentUser.role === "ADMIN" ? "All Tickets" : "My Tickets"}</h2>
-              {currentUser.role === "USER" && (
-                <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Ticket
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New Ticket</DialogTitle>
-                      <DialogDescription>Describe your issue and we'll help you resolve it.</DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleCreateTicket} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="ticket-title">Title</Label>
-                        <Input
-                          id="ticket-title"
-                          value={newTicket.title}
-                          onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ticket-description">Description</Label>
-                        <Textarea
-                          id="ticket-description"
-                          value={newTicket.description}
-                          onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ticket-priority">Priority</Label>
-                        <Select
-                          value={newTicket.priority}
-                          onValueChange={(value) => setNewTicket({ ...newTicket, priority: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="LOW">Low</SelectItem>
-                            <SelectItem value="MEDIUM">Medium</SelectItem>
-                            <SelectItem value="HIGH">High</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button type="submit" className="w-full">
+              <div className="flex items-center space-x-4">
+                <Button onClick={exportToExcel} variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export to Excel
+                </Button>
+                {currentUser.role === "USER" && (
+                  <Dialog open={isCreateTicketOpen} onOpenChange={setIsCreateTicketOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
                         Create Ticket
                       </Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              )}
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New Ticket</DialogTitle>
+                        <DialogDescription>Describe your issue and we'll help you resolve it.</DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleCreateTicket} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="ticket-title">Title</Label>
+                          <Input
+                            id="ticket-title"
+                            value={newTicket.title}
+                            onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ticket-description">Description</Label>
+                          <Textarea
+                            id="ticket-description"
+                            value={newTicket.description}
+                            onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="ticket-priority">Priority</Label>
+                          <Select
+                            value={newTicket.priority}
+                            onValueChange={(value) => setNewTicket({ ...newTicket, priority: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="LOW">Low</SelectItem>
+                              <SelectItem value="MEDIUM">Medium</SelectItem>
+                              <SelectItem value="HIGH">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button type="submit" className="w-full">
+                          Create Ticket
+                        </Button>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
 
             <Card>
